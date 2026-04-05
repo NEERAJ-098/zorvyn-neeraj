@@ -1,0 +1,418 @@
+{
+  "api_name": "Financial Management Backend API",
+  "version": "1.0.0",
+  "base_url": "http://localhost:3000/api",
+  "authentication": {
+    "type": "Bearer Token",
+    "header_format": "Authorization: Bearer user:<id>:<username>:<role>:<status>",
+    "example": "Bearer user:2:john_analyst:analyst:active"
+  },
+  "roles": ["viewer", "analyst", "admin"],
+  "statuses": ["active", "inactive"],
+  "record_types": ["income", "expense"],
+  "endpoints": {
+    "health": {
+      "method": "GET",
+      "path": "/health",
+      "description": "Check server health",
+      "auth": false,
+      "response": {
+        "status": "ok",
+        "timestamp": "ISO 8601"
+      }
+    },
+    "docs": {
+      "method": "GET",
+      "path": "/docs",
+      "description": "Get API documentation",
+      "auth": false,
+      "response": "API documentation object"
+    },
+    "users": {
+      "create_user": {
+        "method": "POST",
+        "path": "/users",
+        "description": "Create a new user",
+        "auth": true,
+        "required_role": "admin",
+        "request_body": {
+          "username": "string (min 3 chars, unique)",
+          "email": "string (valid email, unique)",
+          "password": "string (min 6 chars)",
+          "role": "string (viewer|analyst|admin)",
+          "status": "string (active|inactive)"
+        },
+        "response_code": 201,
+        "success_response": {
+          "success": true,
+          "message": "User created successfully",
+          "data": {
+            "id": "integer",
+            "username": "string",
+            "email": "string",
+            "role": "string",
+            "status": "string"
+          }
+        }
+      },
+      "get_all_users": {
+        "method": "GET",
+        "path": "/users",
+        "description": "Get all users with pagination",
+        "auth": true,
+        "required_role": "admin",
+        "query_params": {
+          "limit": "integer (default: 20)",
+          "offset": "integer (default: 0)"
+        },
+        "response_code": 200
+      },
+      "get_current_user": {
+        "method": "GET",
+        "path": "/users/me",
+        "description": "Get authenticated user profile",
+        "auth": true,
+        "required_role": "any",
+        "response_code": 200
+      },
+      "get_user_by_id": {
+        "method": "GET",
+        "path": "/users/:id",
+        "description": "Get user by ID (admin or self)",
+        "auth": true,
+        "required_role": "any",
+        "path_params": {
+          "id": "integer"
+        },
+        "response_code": 200
+      },
+      "update_user": {
+        "method": "PUT",
+        "path": "/users/:id",
+        "description": "Update user (admin or self)",
+        "auth": true,
+        "required_role": "any",
+        "path_params": {
+          "id": "integer"
+        },
+        "request_body": {
+          "role": "string (optional, admin only)",
+          "status": "string (optional)"
+        },
+        "response_code": 200
+      },
+      "delete_user": {
+        "method": "DELETE",
+        "path": "/users/:id",
+        "description": "Delete user",
+        "auth": true,
+        "required_role": "admin",
+        "path_params": {
+          "id": "integer"
+        },
+        "response_code": 200
+      }
+    },
+    "records": {
+      "create_record": {
+        "method": "POST",
+        "path": "/records",
+        "description": "Create financial record",
+        "auth": true,
+        "required_role": ["analyst", "admin"],
+        "request_body": {
+          "amount": "number (positive)",
+          "type": "string (income|expense)",
+          "category": "string",
+          "description": "string (optional)",
+          "record_date": "string (YYYY-MM-DD)"
+        },
+        "response_code": 201
+      },
+      "get_records": {
+        "method": "GET",
+        "path": "/records",
+        "description": "Get user records with filtering",
+        "auth": true,
+        "required_role": "any",
+        "query_params": {
+          "type": "string (income|expense, optional)",
+          "category": "string (optional)",
+          "startDate": "string (YYYY-MM-DD, optional)",
+          "endDate": "string (YYYY-MM-DD, optional)",
+          "limit": "integer (default: 100)",
+          "offset": "integer (default: 0)"
+        },
+        "response_code": 200
+      },
+      "get_record": {
+        "method": "GET",
+        "path": "/records/:id",
+        "description": "Get specific record",
+        "auth": true,
+        "required_role": "any",
+        "path_params": {
+          "id": "integer"
+        },
+        "response_code": 200
+      },
+      "update_record": {
+        "method": "PUT",
+        "path": "/records/:id",
+        "description": "Update financial record",
+        "auth": true,
+        "required_role": ["analyst", "admin"],
+        "path_params": {
+          "id": "integer"
+        },
+        "request_body": {
+          "amount": "number (optional)",
+          "type": "string (optional)",
+          "category": "string (optional)",
+          "description": "string (optional)",
+          "record_date": "string (optional)"
+        },
+        "response_code": 200
+      },
+      "delete_record": {
+        "method": "DELETE",
+        "path": "/records/:id",
+        "description": "Delete financial record",
+        "auth": true,
+        "required_role": ["analyst", "admin"],
+        "path_params": {
+          "id": "integer"
+        },
+        "response_code": 200
+      }
+    },
+    "dashboard": {
+      "get_comprehensive_dashboard": {
+        "method": "GET",
+        "path": "/dashboard",
+        "description": "Get complete dashboard data",
+        "auth": true,
+        "required_role": "any",
+        "query_params": {
+          "startDate": "string (YYYY-MM-DD, optional)",
+          "endDate": "string (YYYY-MM-DD, optional)"
+        },
+        "response_code": 200,
+        "response": {
+          "success": true,
+          "data": {
+            "summary": {
+              "total_income": "number",
+              "total_expenses": "number",
+              "net_balance": "number",
+              "total_records": "integer"
+            },
+            "recent_activity": "array of records",
+            "category_breakdown": "array of categories"
+          }
+        }
+      },
+      "get_summary": {
+        "method": "GET",
+        "path": "/dashboard/summary",
+        "description": "Get financial summary",
+        "auth": true,
+        "required_role": "any",
+        "query_params": {
+          "startDate": "string (YYYY-MM-DD, optional)",
+          "endDate": "string (YYYY-MM-DD, optional)"
+        },
+        "response_code": 200
+      },
+      "get_categories": {
+        "method": "GET",
+        "path": "/dashboard/categories",
+        "description": "Get category breakdown",
+        "auth": true,
+        "required_role": "any",
+        "query_params": {
+          "type": "string (income|expense, optional)"
+        },
+        "response_code": 200
+      },
+      "get_recent": {
+        "method": "GET",
+        "path": "/dashboard/recent",
+        "description": "Get recent transactions",
+        "auth": true,
+        "required_role": "any",
+        "query_params": {
+          "limit": "integer (default: 10)"
+        },
+        "response_code": 200
+      }
+    }
+  },
+  "error_responses": {
+    "400": {
+      "name": "ValidationError",
+      "description": "Invalid input data",
+      "example": {
+        "error": "ValidationError",
+        "message": "Amount must be a positive number"
+      }
+    },
+    "401": {
+      "name": "AuthenticationError",
+      "description": "Authentication failed",
+      "example": {
+        "error": "AuthenticationError",
+        "message": "Authorization header is missing"
+      }
+    },
+    "403": {
+      "name": "AuthorizationError",
+      "description": "Insufficient permissions",
+      "example": {
+        "error": "AuthorizationError",
+        "message": "This action requires one of these roles: analyst, admin"
+      }
+    },
+    "404": {
+      "name": "NotFoundError",
+      "description": "Resource not found",
+      "example": {
+        "error": "NotFoundError",
+        "message": "Record with ID 9999 not found"
+      }
+    },
+    "409": {
+      "name": "ConflictError",
+      "description": "Resource already exists",
+      "example": {
+        "error": "ConflictError",
+        "message": "Username or email already exists"
+      }
+    },
+    "500": {
+      "name": "InternalServerError",
+      "description": "Server error",
+      "example": {
+        "error": "InternalServerError",
+        "message": "An unexpected error occurred"
+      }
+    }
+  },
+  "rbac_matrix": {
+    "viewer": {
+      "view_own_profile": true,
+      "view_own_records": true,
+      "create_record": false,
+      "update_record": false,
+      "delete_record": false,
+      "view_dashboard": true,
+      "manage_users": false
+    },
+    "analyst": {
+      "view_own_profile": true,
+      "view_own_records": true,
+      "create_record": true,
+      "update_record": true,
+      "delete_record": true,
+      "view_dashboard": true,
+      "manage_users": false,
+      "view_all_users": false
+    },
+    "admin": {
+      "view_own_profile": true,
+      "view_own_records": true,
+      "create_record": true,
+      "update_record": true,
+      "delete_record": true,
+      "view_dashboard": true,
+      "manage_users": true,
+      "view_all_users": true,
+      "delete_users": true,
+      "manage_roles": true
+    }
+  },
+  "database": {
+    "type": "SQLite3",
+    "location": "./data.db",
+    "tables": [
+      {
+        "name": "users",
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER PRIMARY KEY AUTOINCREMENT"
+          },
+          {
+            "name": "username",
+            "type": "TEXT UNIQUE NOT NULL"
+          },
+          {
+            "name": "email",
+            "type": "TEXT UNIQUE NOT NULL"
+          },
+          {
+            "name": "password",
+            "type": "TEXT NOT NULL"
+          },
+          {
+            "name": "role",
+            "type": "TEXT CHECK(role IN ('viewer', 'analyst', 'admin'))"
+          },
+          {
+            "name": "status",
+            "type": "TEXT DEFAULT 'active'"
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME DEFAULT CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME DEFAULT CURRENT_TIMESTAMP"
+          }
+        ]
+      },
+      {
+        "name": "financial_records",
+        "columns": [
+          {
+            "name": "id",
+            "type": "INTEGER PRIMARY KEY AUTOINCREMENT"
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER NOT NULL (FOREIGN KEY -> users)"
+          },
+          {
+            "name": "amount",
+            "type": "DECIMAL(10, 2) NOT NULL"
+          },
+          {
+            "name": "type",
+            "type": "TEXT CHECK(type IN ('income', 'expense'))"
+          },
+          {
+            "name": "category",
+            "type": "TEXT NOT NULL"
+          },
+          {
+            "name": "description",
+            "type": "TEXT"
+          },
+          {
+            "name": "record_date",
+            "type": "DATE NOT NULL"
+          },
+          {
+            "name": "created_at",
+            "type": "DATETIME DEFAULT CURRENT_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "DATETIME DEFAULT CURRENT_TIMESTAMP"
+          }
+        ]
+      }
+    ]
+  }
+}
