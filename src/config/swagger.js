@@ -1,5 +1,10 @@
 const swaggerJsdoc = require('swagger-jsdoc');
 
+const serverUrl =
+  process.env.NODE_ENV === 'production'
+    ? 'https://zorvyn-neeraj.onrender.com/api'
+    : 'http://localhost:3000/api';
+
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -9,13 +14,18 @@ const options = {
       description: 'A comprehensive backend system for managing financial records with role-based access control',
       contact: {
         name: 'Backend Learning',
-        url: 'http://localhost:3000'
+        url: process.env.NODE_ENV === 'production'
+    ? 'https://zorvyn-neeraj.onrender.com/api'
+    : 'http://localhost:3000/api';
+
       }
     },
     servers: [
       {
-        url: 'http://localhost:3000/api',
-        description: 'Development Server'
+        url: serverUrl,
+        description: process.env.NODE_ENV === 'production'
+            ? 'Production Server'
+            : 'Development Server',
       }
     ],
     components: {
