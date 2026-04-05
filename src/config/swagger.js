@@ -16,7 +16,7 @@ const options = {
         name: 'Backend Learning',
         url: process.env.NODE_ENV === 'production'
     ? 'https://zorvyn-neeraj.onrender.com/api'
-    : 'http://localhost:3000/api';
+    : 'http://localhost:3000/api'
 
       }
     },
